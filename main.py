@@ -1,5 +1,4 @@
-#autor: Márcio Belloni
-#whatsapp: 11 97825-0198
+# Author: Márcio Belloni
 
 import pandas as pd
 import matplotlib.pyplot as plt
