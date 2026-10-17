@@ -1,0 +1,15 @@
+{
+  "rows": 60,
+  "features": [
+    "mpg",
+    "horsepower",
+    "weight"
+  ],
+  "suggested_k": 3,
+  "best_silhouette_k": 2,
+  "cluster_sizes": {
+    "0": 25,
+    "1": 14,
+    "2": 21
+  }
+}

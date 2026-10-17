@@ -1,29 +1,70 @@
-# Clustering: Elbow Method, K-Means and Colored Dendrogram
+# Choosing the Number of Clusters: Elbow, Silhouette, K-Means and Dendrograms
 
-Finding the right number of clusters instead of guessing it. The script uses the
-**Elbow Method** to choose `k`, fits **K-Means**, and draws a **hierarchical-clustering
-dendrogram** (Ward linkage) colored by distance.
+![CI](https://github.com/devbelloni/clustering_elbow_dendrograma_colorido/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 
-Dataset: the `mpg` car dataset bundled with `seaborn` (no download needed). Features:
-`mpg`, `horsepower`, `weight`. A random sample of 30 cars is used.
+A small, tested toolkit that answers a question every clustering project starts with:
+**how many clusters should I use?** It combines three views of the same data:
 
-## How it works
+1. the **elbow method** (inertia vs. k), with an automatic elbow detector,
+2. the **silhouette score**, a second, independent criterion,
+3. a **Ward dendrogram** cut at the chosen k.
 
-1. `elbow.py` fits K-Means for `k = 1..10` and plots the inertia (within-cluster sum of
-   squares). The "elbow" in the curve marks the best `k`; for this data it is **4**.
-2. `main.py` fits K-Means with `k = 4` and builds a Ward-linkage dendrogram, coloring
-   branches with a distance threshold so the four groups are visible.
+## Example (real run)
 
-## Run it
+Dataset: seaborn's `mpg` cars, features `mpg`, `horsepower`, `weight`, random sample of 60
+cars, standardized features, seed 42.
+
+| Criterion | Result |
+|---|---|
+| Elbow (automatic) | **k = 3** |
+| Best silhouette | k = 2 (0.59), with a second local peak at k = 4 |
+| K-Means cluster sizes at k = 3 | 25 / 14 / 21 |
+
+The two criteria disagree, and that is the honest lesson: the data has a strong 2-group
+structure (small economical cars vs. large heavy ones) that splits further into 3 groups.
+Always check more than one criterion and use domain knowledge to choose.
+
+![Elbow and silhouette](docs/elbow.png)
+
+![Dendrogram](docs/dendrogram.png)
+
+## Design decisions
+
+- **Standardized features.** K-Means and Ward linkage use Euclidean distance; without
+  scaling, `weight` (thousands) would drown `mpg` (tens). Median imputation handles the
+  missing `horsepower` values.
+- **Deterministic.** Every random step takes a `seed`.
+- **Separation of concerns.** `core.py` has no plotting or I/O, so it is unit-tested;
+  `plots.py` draws; `cli.py` wires them together.
+
+## Install and run
 
 ```bash
-pip install -r requirements.txt
-python main.py
+pip install -e ".[dev]"
+python -m clustering_demo --sample 60 --out reports        # uses seaborn's mpg
+python -m clustering_demo --csv my.csv --features a b c    # your own data
 ```
 
-## Stack
+Outputs `elbow.png`, `dendrogram.png` and `summary.json` in the output directory.
 
-Python, pandas, scikit-learn, SciPy, seaborn, Matplotlib.
+## Tests
+
+```bash
+pytest -q && ruff check .
+```
+
+The tests build synthetic blobs with a known number of clusters and verify that the elbow
+detector and the silhouette both recover it, that results are reproducible, and that the
+CLI runs end to end.
+
+## Project layout
+
+```
+src/clustering_demo/   core.py (algorithms) · plots.py · cli.py
+tests/                 pytest suite
+docs/                  figures shown above
+```
 
 ## Author
 
